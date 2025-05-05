@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DomainEvents.EfCore.Tests/DomainEvents.EfCore.Tests.csproj" />
+  <Project Path="DomainEvents.EfCore/DomainEvents.EfCore.csproj" />
+  <Project Path="DomainEvents.Sample/DomainEvents.Sample.csproj" />
+</Solution>
