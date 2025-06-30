@@ -27,7 +27,38 @@ public class Cart : BEntity
 Raise a domain event:
 ```c#
 var cartInstance = new Cart();
+cartInstance.Id = 1;
 cartInstance.Raise(new CartCreated(cartInstance.Id));
+```
+
+How does domain event looks like?
+
+We need to use the IDomainEvent interface to ensure the internal implementation is going to find the defined domains.
+```c#
+public class CartCreatedDomainEvent : IDomainEvent
+{
+    public int CartId { get; set;}
+    public CartCreatedDomainEvent(int cartId)
+    {
+        CartId = cartId;
+    }
+}
+
+```
+
+
+Then, we need to set our domain event handler, to ensure proper event handling.
+It can be done like this, implementing the `IDomainEventHandler` interface:
+
+```c#
+public class CartCreatedDomainEventHandler : IDomainEventHandler<CartCreatedDomainEvent>
+{
+    public Task HandleAsync(CartCreatedDomainEvent domainEvent, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Handling the {nameof(CartCreatedDomainEvent)} with the CartId of {domainEvent.CartId}");
+        return Task.CompletedTask;
+    }
+}
 ```
 
 
@@ -46,4 +77,10 @@ Adds Cart to the Database:
 
 uow.DbContext.Carts.Add(cartInstance);
 await uow.SaveChangesAsync(CancellationToken.None);
+```
+
+Expected output:
+
+```
+Handling the CartCreatedDomainEvent with the CartId of 1
 ```
