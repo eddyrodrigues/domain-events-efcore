@@ -24,18 +24,18 @@ public class DomainEventDispather : IDomainEventDispather
     public async Task DispathAsync(IDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         // var handlers = (IDomainEventHandler<IDomainEvent>[]) _serviceProvider.GetKeyedServices(typeof(IDomainEventHandler<IDomainEvent>),Constants.DomainEventHandler.ToString());
-        
         var domainEventType = domainEvent.GetType();
 
-        var d = typeof(IDomainEventHandler<>).MakeGenericType(domainEventType);
-
-
-        var handlers =  _serviceProvider.GetServices(d);
+        var domainEventHandlerGenerics = typeof(IDomainEventHandler<>).MakeGenericType(domainEventType);
+        var handlers =  _serviceProvider.GetServices(domainEventHandlerGenerics);
 
         foreach (var handler in handlers)
         {
+            if (handler == null) continue;
+
+            if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
             var handleMethod = handler.GetType().GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync));
-            handleMethod.Invoke(handler, new object[] {domainEvent, cancellationToken});
+            await Task.Run(() => handleMethod?.Invoke(handler, new object[] { domainEvent, cancellationToken }) ?? Task.CompletedTask);
         }
     }
 }
